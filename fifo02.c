@@ -29,20 +29,20 @@ int main(){
       write(STDOUT_FILENO, "\nFIFO creado correctamente\n", sizeof("\nFIFO creado correctamente\n"));
    }
 
-   switch (fork()){
+   switch (fork()){ //Se crea proceso hijo
 
       case -1:
          write(STDOUT_FILENO, "\nError al crear hijo", sizeof("\nError al crear hijo"));
          return -1;
       break;
 
-      case 0:
+      case 0: //Proceso Hijo
 
          write(STDOUT_FILENO, "\nEntrando proceso HIJO", sizeof("\nEntrando proceso HIJO"));
 
          sleep(5);
 
-         fifo_d = open(FIFO_PATH, O_RDONLY, 0); 
+         fifo_d = open(FIFO_PATH, O_RDONLY, 0);  //Hijo abre FIFO en modo lectura
          if(fifo_d == -1){
             write(STDOUT_FILENO, "\nHIJO: Error al abrir FIFO ", sizeof("\nHIJO: Error al abrir FIFO "));
             return -1;
@@ -51,27 +51,32 @@ int main(){
          }
 
          // Se lee FIFO
-         leido = read(fifo_d, buff, sizeof(buff));   
+         leido = read(fifo_d, buff, sizeof(buff)); //Hijo lee contenido de FIFO y lo guarda en buff
          if(leido == -1){
             write(STDOUT_FILENO, "\nHIJO: Error al leer en FIFO", sizeof("\nHIJO: Error al leer en FIFO"));
          }else {
             write(STDOUT_FILENO, "\nHIJO: Leido del FIFO: ", sizeof("\nHIJO: Leido del FIFO: "));
-            write(STDOUT_FILENO, buff, leido-1);
+            write(STDOUT_FILENO, buff, leido-1);   //Imprime en paantalla contenido de buff
             write(STDOUT_FILENO, "\n", sizeof("\n"));
          }
 
-         close(fifo_d);
+         close(fifo_d); //Cierra FIFO
 
          write(STDOUT_FILENO, "\nSaliendo proceso HIJO\n", sizeof("\nSaliendo proceso HIJO\n"));
          exit(0);
       break;
 
-      default:
+      default: //Proceso Padre
          write(STDOUT_FILENO, "\nEntrando proceso PADRE", sizeof("\nEntrando proceso PADRE")); 
+         
+         fifo_d = open(FIFO_PATH, O_WRONLY); //Padre abre FIFO
+         
+         write(fifo_d, MENSAJE, sizeof (MENSAJE)); //Escribre en FIFO
+         
+         close(fifo_d);			//Cierra FIFO
+         
 
-         /*  
-         //El padre que debe hacer con la FIFO ?
-         */      
+         
          
          wait(NULL);   
          write (0, "\nSaliendo proceso PADRE\n", sizeof("\nSaliendo proceso PADRE\n")); 

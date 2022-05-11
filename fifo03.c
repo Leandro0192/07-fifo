@@ -1,5 +1,5 @@
 /*
- * Ejercicio 3 del TP FIFO
+ * Ejercicio 4 del TP FIFO
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,31 +29,35 @@ int main(){
    }
 
 
-   switch (fork()){ 
+   switch (fork()){  //Se crea proceso Hijo
       
       case -1:      
          write(STDOUT_FILENO, "\nError al crear hijo", sizeof("\nError al crear hijo"));
          return -1;
       break;
 
-      case 0:
+      case 0: //Proceso Hijo
 
          write(STDOUT_FILENO, "\nEntrando proceso HIJO", sizeof("\nEntrando proceso HIJO"));
 
          sleep(5);
+         
+         fifo_d=open(FIFO_PATH, O_RDONLY); //Abre FIFO en modo lectura
+         printf("HIJO: FIFO ABIERTO CORRECTAMENTE\n");
+         leido= read(fifo_d, buff, sizeof buff);//Lee el contenido y lo guarda en buff
+         write(STDOUT_FILENO, "HIJO: LEE... ", sizeof ("HIJO: LEE... "));
+         write(STDOUT_FILENO, buff, leido-1);//Imprime en pantalla el contenido de buff
+         close(fifo_d); //Cierra FIFO
 
-         /*  
-         //El Hijo que debe hacer con la FIFO ?
-         */      
 
          write(STDOUT_FILENO, "\nSaliendo proceso HIJO\n", sizeof("\nSaliendo proceso HIJO\n"));
          exit(0);
       break;
 
-      default:
+      default: //Proceso Padre
          write(STDOUT_FILENO, "\nEntrando proceso PADRE", sizeof("\nEntrando proceso PADRE"));
 
-         fifo_d = open(FIFO_PATH, O_WRONLY, 0);
+         fifo_d = open(FIFO_PATH, O_WRONLY, 0); //FIFO abierta en modo escritura
          if(fifo_d == -1){
             write(STDOUT_FILENO, "\nPADRE: Error al abrir FIFO ", sizeof("\nPADRE: Error al abrir FIFO "));
             return -1;
@@ -62,14 +66,14 @@ int main(){
          }
 
          // Se escribe en el FIFO
-         err = write(fifo_d, MENSAJE, sizeof(MENSAJE));
+         err = write(fifo_d, MENSAJE, sizeof(MENSAJE)); //Se escribe MENSAJE en FIFO
          if(err == -1) {
             write(STDOUT_FILENO, "\nPADRE: Error al escribir en FIFO", sizeof("\nPADRE: Error al escribir en FIFO"));
          } else {
-            write(STDOUT_FILENO, "\nPADRE: Escritos MENSAJE en FIFO", sizeof("\nPADRE: Escritos MENSAJE en FIFO"));
+            write(STDOUT_FILENO, "\nPADRE: Escritos MENSAJE en FIFO\n", sizeof("\nPADRE: Escritos MENSAJE en FIFO"));
          }
 
-         close(fifo_d);
+         close(fifo_d); //Cierro FIFO
 
          wait(NULL);
          write(STDOUT_FILENO, "\nSaliendo proceso PADRE\n", sizeof("\nSaliendo proceso PADRE\n"));
